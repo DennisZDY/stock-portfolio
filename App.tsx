@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Settings, Download, RotateCcw, RefreshCw, BarChart3, Database, Globe, Loader2 } from 'lucide-react';
+import { Settings, Download, RotateCcw, RefreshCw, BarChart3, Database } from 'lucide-react';
 import { Holding, PortfolioStats, SoldTransaction } from './types';
 import { MOCK_HOLDINGS, MOCK_SOLD_HISTORY } from './constants';
 import { StatCard } from './components/StatCard';
