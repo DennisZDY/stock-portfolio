@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, DollarSign, Trash2, ExternalLink, Info, Merge } from 'lucide-react';
+import { Edit2, DollarSign, Trash2, Info, Merge } from 'lucide-react';
 import { Holding, RiskLevel } from '../types';
 
 interface HoldingItemProps {
@@ -96,7 +96,6 @@ export const HoldingItem: React.FC<HoldingItemProps> = ({ holding, discount, has
         <div className="col-span-1 md:col-span-2 order-3">
           <div className="flex items-center gap-1">
             <span className={`text-lg font-bold ${colorClass}`}>${holding.currentPrice.toFixed(2)}</span>
-            <ExternalLink size={12} className="text-gray-400 cursor-pointer hover:text-blue-500" />
           </div>
           <div className={`text-xs ${colorClass}`}>
              {priceChange > 0 ? '+' : ''}{priceChange.toFixed(2)} ({plPercent > 0 ? '+' : ''}{plPercent.toFixed(2)}%)
