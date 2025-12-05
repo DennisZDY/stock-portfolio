@@ -2,7 +2,7 @@ import { Holding, SoldTransaction } from './types';
 
 // --- 預設設定 (您可以在這裡修改預設值) ---
 export const DEFAULT_CONFIG = {
-  initialCapital: 5000000, // 預設本金
+  initialCapital: 600000, // 預設本金
   discount: 1.7            // 預設手續費折數
 };
 
