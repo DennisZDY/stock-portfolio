@@ -1,61 +1,18 @@
 import { Holding, RiskLevel, StrategyType, SoldTransaction } from './types';
 
+// --- 預設設定 (您可以在這裡修改預設值) ---
+export const DEFAULT_CONFIG = {
+  initialCapital: 5000000, // 預設本金
+  discount: 1.7            // 預設手續費折數
+};
+
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
-export const MOCK_HOLDINGS: Holding[] = [
-  {
-    id: generateId(),
-    symbol: "8271",
-    name: "宇瞻",
-    shares: 2000,
-    averageCost: 95.00,
-    currentPrice: 100.00,
-    purchaseDate: "2024-11-24",
-    strategy: StrategyType.BossPullback,
-    riskLevel: RiskLevel.StrongWind,
-    capitalLimit: 200000
-  },
-  {
-    id: generateId(),
-    symbol: "2449",
-    name: "京元電子",
-    shares: 1000,
-    averageCost: 226.00,
-    currentPrice: 226.50,
-    purchaseDate: "2024-12-02",
-    strategy: StrategyType.PartTimeStrongDay,
-    riskLevel: RiskLevel.StrongWind,
-    capitalLimit: 300000
-  },
-  {
-    id: generateId(),
-    symbol: "8996",
-    name: "高力",
-    shares: 600,
-    averageCost: 495.00,
-    currentPrice: 532.00,
-    purchaseDate: "2024-11-19",
-    strategy: StrategyType.BossPullback,
-    riskLevel: RiskLevel.StrongWind,
-    capitalLimit: 300000
-  }
-];
+// 預設持股：改為空陣列，讓您開啟時是乾淨的
+export const MOCK_HOLDINGS: Holding[] = [];
 
-export const MOCK_SOLD_HISTORY: SoldTransaction[] = [
-    {
-        id: "sold-1",
-        symbol: "2603",
-        name: "長榮",
-        shares: 1000,
-        averageCost: 180.00,
-        sellPrice: 166.24,
-        sellDate: "2024-11-10",
-        purchaseDate: "2024-05-10",
-        profitLoss: -13760,
-        strategy: StrategyType.OfficeWorkerStrongWeek,
-        riskLevel: RiskLevel.Turbulence
-    }
-];
+// 預設歷史紀錄：改為空陣列
+export const MOCK_SOLD_HISTORY: SoldTransaction[] = [];
 
 export const STOCK_NAME_MAP: Record<string, string> = {
   "2330": "台積電",
