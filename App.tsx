@@ -97,25 +97,37 @@ const App: React.FC = () => {
   const stats: PortfolioStats = useMemo(() => {
     let investedCapital = 0;
     let marketValue = 0;
+    let totalEstimatedNetPL = 0;
     
     // Fee rate for stats calculation (0.1425% * discount)
     const feeRate = 0.001425 * (discount / 10);
+    const taxRate = 0.003; // Selling tax
 
     holdings.forEach(h => {
       const rawCost = h.shares * h.averageCost;
       // Include buy fee in invested capital
       const buyFee = Math.round(rawCost * feeRate);
-      investedCapital += (rawCost + buyFee);
-      marketValue += h.shares * h.currentPrice;
+      const totalCost = rawCost + buyFee;
+      investedCapital += totalCost;
+      
+      const currentMarketValue = h.shares * h.currentPrice;
+      marketValue += currentMarketValue;
+
+      // Calculate Net P/L for this holding (Estimated)
+      const sellFee = Math.round(currentMarketValue * feeRate);
+      const sellTax = Math.round(currentMarketValue * taxRate);
+      const netProceeds = currentMarketValue - sellFee - sellTax;
+      
+      totalEstimatedNetPL += (netProceeds - totalCost);
     });
 
-    const unrealizedPL = marketValue - investedCapital;
+    const unrealizedPL = totalEstimatedNetPL; // Use Net P/L
     const unrealizedPLPercent = investedCapital > 0 ? (unrealizedPL / investedCapital) * 100 : 0;
     
     // Cash = Initial - Invested + Realized P/L
     const cashBalance = initialCapital - investedCapital + realizedPL;
     
-    // Total Assets = Cash + Market Value
+    // Total Assets = Cash + Market Value (Gross)
     const totalAssets = cashBalance + marketValue;
 
     return {
@@ -605,10 +617,10 @@ const App: React.FC = () => {
           <StatCard 
             title="剩餘可用資金" 
             value={`$${stats.cashBalance.toLocaleString()}`} 
-            footer={`其中可分配額度: $${Math.max(0, stats.cashBalance * 0.8).toLocaleString()}`} 
+            // Removed footer displaying allocatable amount
           />
           <StatCard 
-            title="未實現損益" 
+            title="未實現淨損益" 
             value={`$${stats.unrealizedPL > 0 ? '+' : ''}${stats.unrealizedPL.toLocaleString()}`}
             subValue={`${stats.unrealizedPLPercent > 0 ? '+' : ''}${stats.unrealizedPLPercent.toFixed(2)}%`}
             subValueColor={stats.unrealizedPL >= 0 ? 'text-stock-up' : 'text-stock-down'}
