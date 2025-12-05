@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, History, Plus, ArrowLeft, Save, Loader2, PenLine, TrendingUp, TrendingDown, Calendar, DollarSign, Layers } from 'lucide-react';
+import { X, History, Plus, ArrowLeft, Save, Loader2, PenLine, Layers } from 'lucide-react';
 import { SoldTransaction, StrategyType, RiskLevel } from '../types';
 import { STOCK_NAME_MAP } from '../constants';
 
