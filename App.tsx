@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Settings, Download, RotateCcw, RefreshCw, BarChart3, Database } from 'lucide-react';
 import { Holding, PortfolioStats, SoldTransaction } from './types';
-import { MOCK_HOLDINGS, MOCK_SOLD_HISTORY } from './constants';
+import { MOCK_HOLDINGS, MOCK_SOLD_HISTORY, DEFAULT_CONFIG } from './constants';
 import { StatCard } from './components/StatCard';
 import { AddStockForm } from './components/AddStockForm';
 import { HoldingItem } from './components/HoldingItem';
@@ -26,7 +26,7 @@ const App: React.FC = () => {
   
   const [initialCapital, setInitialCapital] = useState<number>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.CAPITAL);
-    return saved ? Number(saved) : 1000000;
+    return saved ? Number(saved) : DEFAULT_CONFIG.initialCapital;
   });
 
   const [holdings, setHoldings] = useState<Holding[]>(() => {
@@ -50,7 +50,7 @@ const App: React.FC = () => {
 
   const [discount, setDiscount] = useState<number>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.DISCOUNT);
-    return saved ? Number(saved) : 2.8;
+    return saved ? Number(saved) : DEFAULT_CONFIG.discount;
   });
 
   const [isAutoRefresh, setIsAutoRefresh] = useState(false);
@@ -310,14 +310,15 @@ const App: React.FC = () => {
     setHoldings([]);
     setSoldHistory([]);
     setRealizedPL(0);
-    setInitialCapital(1000000); // Reset to default capital
+    setInitialCapital(DEFAULT_CONFIG.initialCapital); // Reset to configured default
+    setDiscount(DEFAULT_CONFIG.discount); // Reset to configured discount
     
     // Clear LocalStorage
     localStorage.removeItem(STORAGE_KEYS.HOLDINGS);
     localStorage.removeItem(STORAGE_KEYS.SOLD_HISTORY);
     localStorage.removeItem(STORAGE_KEYS.REALIZED_PL);
     localStorage.removeItem(STORAGE_KEYS.CAPITAL);
-    // Note: We might want to keep DISCOUNT setting, or reset it too. Here we keep it or reset manually if needed.
+    localStorage.removeItem(STORAGE_KEYS.DISCOUNT);
     
     setShowResetConfirm(false);
   };
