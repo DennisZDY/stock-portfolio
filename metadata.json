@@ -1,0 +1,5 @@
+{
+  "name": "智慧庫存試算助手",
+  "description": "A comprehensive stock portfolio tracking dashboard replicating the visual style and functionality of the provided reference, featuring asset allocation, P/L calculation, and strategy tracking.",
+  "requestFramePermissions": []
+}
