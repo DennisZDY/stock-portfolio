@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, History, Plus, ArrowLeft, Save, Loader2, PenLine, Layers } from 'lucide-react';
+import { X, History, Plus, ArrowLeft, Save, Loader2, PenLine, Layers, Trash2, Edit2 } from 'lucide-react';
 import { SoldTransaction, StrategyType, RiskLevel } from '../types';
 import { STOCK_NAME_MAP } from '../constants';
 
@@ -8,11 +8,14 @@ interface SoldHistoryModalProps {
   onClose: () => void;
   history: SoldTransaction[];
   onAdd: (transaction: SoldTransaction) => void;
+  onDelete: (id: string) => void;
+  onUpdate?: (transaction: SoldTransaction) => void;
   discount: number;
 }
 
-export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onClose, history, onAdd, discount }) => {
+export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onClose, history, onAdd, onDelete, onUpdate, discount }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   // Form State
   const [symbol, setSymbol] = useState('');
@@ -34,6 +37,38 @@ export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onCl
   if (!isOpen) return null;
 
   const totalRealized = history.reduce((sum, item) => sum + item.profitLoss, 0);
+
+  const handlePrepareAdd = () => {
+    setEditingId(null);
+    setSymbol('');
+    setName('');
+    setShares('');
+    setBuyPrice('');
+    setSellPrice('');
+    setBuyDate('');
+    setSellDate(new Date().toISOString().split('T')[0]);
+    setBuyStrategy(StrategyType.PartTimeStrongDay);
+    setBuyRisk(RiskLevel.StrongWind);
+    setSellStrategy('');
+    setSellRisk('');
+    setIsAdding(true);
+  };
+
+  const handleEdit = (item: SoldTransaction) => {
+    setEditingId(item.id);
+    setSymbol(item.symbol);
+    setName(item.name);
+    setShares(item.shares.toString());
+    setBuyPrice(item.averageCost.toString());
+    setSellPrice(item.sellPrice.toString());
+    setBuyDate(item.purchaseDate);
+    setSellDate(item.sellDate);
+    setBuyStrategy(item.strategy as StrategyType);
+    setBuyRisk(item.riskLevel as RiskLevel);
+    setSellStrategy(item.sellStrategy || '');
+    setSellRisk(item.sellRiskLevel || '');
+    setIsAdding(true);
+  };
 
   const fetchStockName = async (inputSymbol: string) => {
     const cleanSymbol = inputSymbol.trim().toUpperCase();
@@ -124,7 +159,7 @@ export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onCl
     const profitLoss = netSellRevenue - totalBuyCost;
 
     const newTransaction: SoldTransaction = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: editingId || Math.random().toString(36).substr(2, 9),
       symbol: symbol.toUpperCase().trim(),
       name: name.trim() || '自訂個股',
       shares: count,
@@ -139,8 +174,13 @@ export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onCl
       sellRiskLevel: sellRisk || undefined
     };
 
-    onAdd(newTransaction);
+    if (editingId && onUpdate) {
+        onUpdate(newTransaction);
+    } else {
+        onAdd(newTransaction);
+    }
     setIsAdding(false);
+    setEditingId(null);
     
     // Reset form
     setSymbol('');
@@ -161,13 +201,13 @@ export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onCl
             <div className="flex items-center gap-2">
                 <History size={20} className="text-blue-600" />
                 <h3 className="text-lg font-bold text-gray-800">
-                  {isAdding ? '手動新增交易紀錄' : '已實現損益明細'}
+                  {isAdding ? (editingId ? '編輯交易紀錄' : '手動新增交易紀錄') : '已實現損益明細'}
                 </h3>
             </div>
             <div className="flex items-center gap-2">
               {!isAdding && (
                 <button 
-                  onClick={() => setIsAdding(true)}
+                  onClick={handlePrepareAdd}
                   className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
                 >
                   <Plus size={16} />
@@ -358,7 +398,7 @@ export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onCl
                       className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
                     >
                       <Save size={18} />
-                      儲存紀錄
+                      {editingId ? '儲存變更' : '儲存紀錄'}
                     </button>
                  </div>
               </form>
@@ -386,6 +426,20 @@ export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onCl
                                             <div className="flex items-center gap-2">
                                                 <span className="font-bold text-lg text-gray-800">{item.symbol}</span>
                                                 <span className="text-sm text-gray-600">{item.name}</span>
+                                                <div className="flex gap-1 ml-1">
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
+                                                        className="p-1 text-gray-300 hover:text-blue-500 transition-colors"
+                                                    >
+                                                        <Edit2 size={14} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
+                                                        className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div className="text-xs text-gray-500 mt-1 space-y-0.5">
                                               <div className="flex items-center gap-1 relative group">
@@ -468,6 +522,7 @@ export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onCl
                                 <th className="py-2 font-medium text-right">賣出價</th>
                                 <th className="py-2 font-medium text-right">損益金額</th>
                                 <th className="py-2 font-medium text-right pr-2">報酬率</th>
+                                <th className="py-2 font-medium text-center w-16">操作</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -531,6 +586,24 @@ export const SoldHistoryModal: React.FC<SoldHistoryModalProps> = ({ isOpen, onCl
                                         </td>
                                         <td className={`py-3 text-right align-top pr-2 ${isProfit ? 'text-stock-up' : 'text-stock-down'}`}>
                                             {roi.toFixed(2)}%
+                                        </td>
+                                        <td className="py-3 text-center align-top">
+                                            <div className="flex justify-center gap-1">
+                                                <button 
+                                                    onClick={() => handleEdit(item)}
+                                                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                    title="編輯"
+                                                >
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => onDelete(item.id)}
+                                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                    title="刪除"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 );
