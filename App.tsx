@@ -64,6 +64,7 @@ const App: React.FC = () => {
   const [mergingHolding, setMergingHolding] = useState<Holding | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [holdingToDelete, setHoldingToDelete] = useState<string | null>(null);
+  const [soldTransactionToDelete, setSoldTransactionToDelete] = useState<string | null>(null);
   const [showSoldHistory, setShowSoldHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -71,7 +72,6 @@ const App: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // --- Persistence Effects ---
-  // Save to LocalStorage whenever critical data changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CAPITAL, initialCapital.toString());
   }, [initialCapital]);
@@ -153,15 +153,12 @@ const App: React.FC = () => {
 
   // Handlers
   const handleAddHolding = (newHoldingData: Omit<Holding, 'id' | 'currentPrice'>) => {
-    // Mock current price as cost +/- 2% initially, will be updated by sync
     const currentPrice = newHoldingData.averageCost;
-
     const newHolding: Holding = {
       ...newHoldingData,
       id: Math.random().toString(36).substr(2, 9),
       currentPrice
     };
-
     setHoldings(prev => [newHolding, ...prev]);
   };
 
@@ -174,6 +171,29 @@ const App: React.FC = () => {
       setHoldings(prev => prev.filter(h => h.id !== holdingToDelete));
       setHoldingToDelete(null);
     }
+  };
+
+  const handleDeleteSoldTransaction = (id: string) => {
+    setSoldTransactionToDelete(id);
+  };
+
+  const confirmDeleteSoldTransaction = () => {
+    if (soldTransactionToDelete) {
+        const transaction = soldHistory.find(t => t.id === soldTransactionToDelete);
+        if (transaction) {
+            setSoldHistory(prev => prev.filter(t => t.id !== soldTransactionToDelete));
+            setRealizedPL(prev => prev - transaction.profitLoss);
+        }
+        setSoldTransactionToDelete(null);
+    }
+  };
+
+  const handleUpdateSoldTransaction = (updatedTransaction: SoldTransaction) => {
+    const oldTransaction = soldHistory.find(t => t.id === updatedTransaction.id);
+    if (!oldTransaction) return;
+
+    setSoldHistory(prev => prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t));
+    setRealizedPL(prev => prev - oldTransaction.profitLoss + updatedTransaction.profitLoss);
   };
 
   const handleEditHolding = (holding: Holding) => {
@@ -760,6 +780,8 @@ const App: React.FC = () => {
         onClose={() => setShowSoldHistory(false)}
         history={soldHistory}
         onAdd={handleAddSoldTransaction}
+        onDelete={handleDeleteSoldTransaction}
+        onUpdate={handleUpdateSoldTransaction}
         discount={discount}
       />
 
@@ -779,6 +801,16 @@ const App: React.FC = () => {
         onConfirm={confirmDelete}
         title="刪除持股"
         message="確定要刪除此持股嗎？"
+        confirmText="刪除"
+        isDangerous={true}
+      />
+
+      <ConfirmModal
+        isOpen={!!soldTransactionToDelete}
+        onClose={() => setSoldTransactionToDelete(null)}
+        onConfirm={confirmDeleteSoldTransaction}
+        title="刪除交易紀錄"
+        message="確定要刪除此筆已實現損益紀錄嗎？刪除後將重新計算已實現總損益。"
         confirmText="刪除"
         isDangerous={true}
       />
